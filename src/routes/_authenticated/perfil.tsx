@@ -1,0 +1,136 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { supabase, type Usuario } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+import { LogOut, AlertTriangle, Mail, Heart, Trophy } from "lucide-react";
+
+export const Route = createFileRoute("/_authenticated/perfil")({
+  component: PerfilPage,
+});
+
+type EvalRow = {
+  id: string;
+  puntaje: number;
+  puntaje_maximo: number;
+  fecha: string;
+  id_categoria: string;
+  categoria?: { nombre: string } | null;
+};
+
+function PerfilPage() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [perfil, setPerfil] = useState<Usuario | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("usuario")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setPerfil((data as Usuario) ?? null));
+  }, [user]);
+
+  const { data: evals } = useQuery({
+    queryKey: ["evals", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("evaluacion")
+        .select("id, puntaje, puntaje_maximo, fecha, id_categoria, categoria(nombre)")
+        .eq("id_usuario", user!.id)
+        .order("fecha", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data as unknown as EvalRow[];
+    },
+  });
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate({ to: "/login", replace: true });
+  };
+
+  return (
+    <div className="px-5 pt-8">
+      <div className="rounded-3xl bg-gradient-to-br from-primary to-primary/80 p-6 text-primary-foreground">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-2xl font-bold">
+          {(perfil?.nombre ?? user?.email ?? "?").charAt(0).toUpperCase()}
+        </div>
+        <h1 className="mt-4 text-2xl font-bold">{perfil?.nombre ?? "Mi perfil"}</h1>
+        <p className="mt-1 inline-flex items-center gap-1.5 text-sm opacity-90">
+          <Mail className="h-4 w-4" /> {perfil?.correo ?? user?.email}
+        </p>
+        {perfil?.perfil_interes && (
+          <p className="mt-1 inline-flex items-center gap-1.5 text-sm opacity-90">
+            <Heart className="h-4 w-4" /> {perfil.perfil_interes}
+          </p>
+        )}
+      </div>
+
+      <section className="mt-8">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <Trophy className="h-4 w-4" /> Mis evaluaciones
+        </h2>
+        {!evals ? (
+          <div className="h-24 animate-pulse rounded-xl bg-muted" />
+        ) : evals.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Aún no has completado evaluaciones.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {evals.map((e) => {
+              const pct = Math.round((e.puntaje / e.puntaje_maximo) * 100);
+              return (
+                <li
+                  key={e.id}
+                  className="flex items-center justify-between rounded-xl border bg-card p-4"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">
+                      {e.categoria?.nombre ?? "Categoría"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(e.fecha).toLocaleDateString("es-CO", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-primary">
+                      {e.puntaje}/{e.puntaje_maximo}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{pct}%</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      <div className="mt-8 space-y-3">
+        <Button
+          variant="outline"
+          className="w-full gap-2"
+          onClick={() => navigate({ to: "/reporte" })}
+        >
+          <AlertTriangle className="h-4 w-4" /> Reportar contenido
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full gap-2 text-destructive hover:text-destructive"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4" /> Cerrar sesión
+        </Button>
+      </div>
+    </div>
+  );
+}
