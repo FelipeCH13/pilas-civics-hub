@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase, type Tramite } from "@/lib/supabase";
 import { ArrowLeft, Clock, ExternalLink, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Markdown } from "@/components/Markdown";
 
 export const Route = createFileRoute("/_authenticated/tramite/$id")({
   component: TramitePage,
@@ -70,9 +71,9 @@ function TramitePage() {
               <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 Requisitos
               </h2>
-              <p className="whitespace-pre-wrap rounded-xl border bg-card p-4 text-[15px] leading-relaxed">
-                {data.requisitos}
-              </p>
+              <div className="rounded-xl border bg-card p-4">
+                <Markdown>{data.requisitos}</Markdown>
+              </div>
             </section>
           )}
 
@@ -90,7 +91,7 @@ function TramitePage() {
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                       {i + 1}
                     </span>
-                    <span className="text-[15px] leading-relaxed">{p}</span>
+                    <div className="flex-1"><Markdown>{p}</Markdown></div>
                   </li>
                 ))}
               </ol>

@@ -43,7 +43,7 @@ function PerfilPage() {
         .select("id, puntaje, puntaje_maximo, fecha, id_categoria, categoria(nombre)")
         .eq("id_usuario", user!.id)
         .order("fecha", { ascending: false })
-        .limit(20);
+        .limit(5);
       if (error) throw error;
       return data as unknown as EvalRow[];
     },
