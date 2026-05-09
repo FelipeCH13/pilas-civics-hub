@@ -82,6 +82,42 @@ function PerfilPage() {
     },
   });
 
+  const { data: categorias } = useQuery({
+    queryKey: ["categorias"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categoria").select("*").order("nombre");
+      if (error) throw error;
+      return data as Categoria[];
+    },
+  });
+
+  const { data: allEvals } = useQuery({
+    queryKey: ["all-evals", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("evaluacion")
+        .select("id_categoria, puntaje, puntaje_maximo")
+        .eq("id_usuario", user!.id);
+      if (error) throw error;
+      return data as { id_categoria: string; puntaje: number; puntaje_maximo: number }[];
+    },
+  });
+
+  const statsByCat: Record<string, { pct: number; count: number }> = {};
+  if (allEvals) {
+    for (const e of allEvals) {
+      const s = statsByCat[e.id_categoria] ?? { sum: 0, count: 0 };
+      (s as any).sum = ((s as any).sum ?? 0) + (e.puntaje / e.puntaje_maximo) * 100;
+      s.count += 1;
+      statsByCat[e.id_categoria] = s as any;
+    }
+    for (const k of Object.keys(statsByCat)) {
+      const s: any = statsByCat[k];
+      statsByCat[k] = { pct: Math.round(s.sum / s.count), count: s.count };
+    }
+  }
+
   const handleLogout = async () => {
     await signOut();
     navigate({ to: "/login", replace: true });
