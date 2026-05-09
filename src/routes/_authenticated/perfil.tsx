@@ -142,6 +142,70 @@ function PerfilPage() {
 
       <section className="mt-8">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <BarChart3 className="h-4 w-4" /> Mi progreso
+        </h2>
+        {!categorias || !allEvals ? (
+          <div className="h-32 animate-pulse rounded-xl bg-muted" />
+        ) : (
+          <ul className="space-y-3">
+            {categorias.map((c) => {
+              const Icon = pickIcon(c.nombre);
+              const stat = statsByCat[c.id] ?? { pct: 0, count: 0 };
+              const label = getLabel(stat.pct, stat.count);
+              const empty = stat.count === 0;
+              return (
+                <li
+                  key={c.id}
+                  className={`rounded-2xl border p-4 ${empty ? "bg-muted/40" : "bg-card"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                        empty ? "bg-muted text-muted-foreground" : "bg-primary-soft text-primary"
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold">{c.nombre}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {empty
+                          ? "Aún no evaluado"
+                          : `${stat.count} ${stat.count === 1 ? "evaluación" : "evaluaciones"}`}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${label.cls}`}
+                    >
+                      {label.text}
+                    </span>
+                  </div>
+                  {empty ? (
+                    <Button
+                      size="sm"
+                      className="mt-3 w-full"
+                      onClick={() => navigate({ to: "/evaluacion/$id", params: { id: c.id } })}
+                    >
+                      Comenzar evaluación
+                    </Button>
+                  ) : (
+                    <div className="mt-3">
+                      <div className="mb-1 flex justify-between text-xs">
+                        <span className="text-muted-foreground">Promedio</span>
+                        <span className="font-semibold text-primary">{stat.pct}%</span>
+                      </div>
+                      <Progress value={stat.pct} />
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           <Trophy className="h-4 w-4" /> Mis evaluaciones
         </h2>
         {!evals ? (
