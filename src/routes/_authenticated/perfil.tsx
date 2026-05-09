@@ -1,10 +1,43 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { supabase, type Usuario } from "@/lib/supabase";
+import { supabase, type Usuario, type Categoria } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { LogOut, AlertTriangle, Mail, Heart, Trophy } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import {
+  LogOut,
+  AlertTriangle,
+  Mail,
+  Heart,
+  Trophy,
+  Wallet,
+  FileText,
+  Bus,
+  Sparkles,
+  BarChart3,
+} from "lucide-react";
+
+const ICONS: Record<string, typeof Wallet> = {
+  financiera: Wallet,
+  finanzas: Wallet,
+  tramites: FileText,
+  "trámites": FileText,
+  movilidad: Bus,
+};
+function pickIcon(nombre: string) {
+  const k = nombre.toLowerCase();
+  for (const key of Object.keys(ICONS)) if (k.includes(key)) return ICONS[key];
+  return Sparkles;
+}
+
+function getLabel(pct: number, count: number) {
+  if (count === 0) return { text: "Aún no evaluado", cls: "bg-muted text-muted-foreground" };
+  if (pct === 0) return { text: "Sin iniciar", cls: "bg-muted text-muted-foreground" };
+  if (pct < 50) return { text: "En progreso", cls: "bg-yellow-100 text-yellow-800" };
+  if (pct < 80) return { text: "Aprendiendo", cls: "bg-blue-100 text-blue-800" };
+  return { text: "Dominado", cls: "bg-green-100 text-green-800" };
+}
 
 export const Route = createFileRoute("/_authenticated/perfil")({
   component: PerfilPage,
