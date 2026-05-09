@@ -106,15 +106,15 @@ function PerfilPage() {
 
   const statsByCat: Record<string, { pct: number; count: number }> = {};
   if (allEvals) {
+    const acc: Record<string, { sum: number; count: number }> = {};
     for (const e of allEvals) {
-      const s = statsByCat[e.id_categoria] ?? { sum: 0, count: 0 };
-      (s as any).sum = ((s as any).sum ?? 0) + (e.puntaje / e.puntaje_maximo) * 100;
+      const s = acc[e.id_categoria] ?? { sum: 0, count: 0 };
+      s.sum += (e.puntaje / e.puntaje_maximo) * 100;
       s.count += 1;
-      statsByCat[e.id_categoria] = s as any;
+      acc[e.id_categoria] = s;
     }
-    for (const k of Object.keys(statsByCat)) {
-      const s: any = statsByCat[k];
-      statsByCat[k] = { pct: Math.round(s.sum / s.count), count: s.count };
+    for (const k of Object.keys(acc)) {
+      statsByCat[k] = { pct: Math.round(acc[k].sum / acc[k].count), count: acc[k].count };
     }
   }
 
