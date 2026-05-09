@@ -4,6 +4,7 @@ import { supabase, type Contenido } from "@/lib/supabase";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Markdown } from "@/components/Markdown";
 
 export const Route = createFileRoute("/_authenticated/contenido/$id")({
   component: ContenidoPage,
@@ -46,9 +47,7 @@ function ContenidoPage() {
               {data.nivel}
             </Badge>
           )}
-          <div className="prose prose-sm mt-6 max-w-none whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
-            {data.cuerpo}
-          </div>
+          <Markdown className="mt-6">{data.cuerpo ?? ""}</Markdown>
 
           <Link to="/reporte" search={{ contenido: data.id }}>
             <Button variant="outline" className="mt-8 w-full gap-2">
