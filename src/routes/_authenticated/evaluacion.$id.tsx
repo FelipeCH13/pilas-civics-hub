@@ -84,22 +84,36 @@ function EvaluacionPage() {
     const pct = Math.round((done.score / done.total) * 100);
     const msg =
       pct >= 80
-        ? "¡Excelente! Dominas el tema 🎉"
+        ? "¡Excelente! Dominas este tema."
         : pct >= 50
-        ? "¡Vas bien! Sigue practicando 💪"
-        : "Sigue aprendiendo, tú puedes 🌱";
+        ? "Vas bien, pero puedes mejorar. Te recomendamos repasar los contenidos."
+        : "Te recomendamos revisar los artículos de esta categoría antes de intentarlo de nuevo.";
     return (
       <div className="px-5 pt-10">
         <div className="rounded-3xl bg-gradient-to-br from-primary to-primary/80 p-8 text-center text-primary-foreground">
           <Trophy className="mx-auto h-14 w-14" />
           <h1 className="mt-4 text-3xl font-bold">
-            {done.score} / {done.total}
+            {done.score} de {done.total} correctas
           </h1>
-          <p className="mt-2 text-sm opacity-90">{pct}% correctas</p>
+          <p className="mt-2 text-sm opacity-90">{pct}%</p>
         </div>
         <p className="mt-6 text-center text-base font-medium">{msg}</p>
         <div className="mt-8 space-y-3">
           <Button
+            className="w-full h-12"
+            onClick={() => navigate({ to: "/categoria/$id", params: { id } })}
+          >
+            Repasar contenidos
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full h-12"
+            onClick={() => navigate({ to: "/home" })}
+          >
+            Volver al inicio
+          </Button>
+          <Button
+            variant="ghost"
             className="w-full h-12 gap-2"
             onClick={() => {
               setAnswers({});
@@ -108,13 +122,6 @@ function EvaluacionPage() {
             }}
           >
             <RotateCcw className="h-4 w-4" /> Intentar de nuevo
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full h-12"
-            onClick={() => navigate({ to: "/categoria/$id", params: { id } })}
-          >
-            Volver a la categoría
           </Button>
         </div>
       </div>
