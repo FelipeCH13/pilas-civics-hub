@@ -18,11 +18,11 @@ export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
 
-const PERFILES = [
-  "Educación Financiera",
-  "Trámites Administrativos",
-  "Movilidad Urbana",
-  "Todas",
+const PERFILES: { value: string; label: string }[] = [
+  { value: "financiera", label: "Educación Financiera" },
+  { value: "tramites", label: "Trámites Administrativos" },
+  { value: "movilidad", label: "Movilidad Urbana" },
+  { value: "todas", label: "Todas" },
 ];
 
 function RegisterPage() {
@@ -31,7 +31,7 @@ function RegisterPage() {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [perfil, setPerfil] = useState("Todas");
+  const [perfil, setPerfil] = useState("todas");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -56,14 +56,23 @@ function RegisterPage() {
     }
 
     const uid = data.user?.id;
-    if (uid) {
-      const { error: insErr } = await supabase.from("usuario").insert({
-        id: uid,
-        nombre,
-        correo: email,
-        perfil_interes: perfil,
-      });
-      if (insErr) console.warn("usuario insert:", insErr.message);
+    if (!uid) {
+      setSubmitting(false);
+      toast.error("No se pudo crear el usuario.");
+      return;
+    }
+
+    const { error: insErr } = await supabase.from("usuario").insert({
+      id: uid,
+      nombre,
+      correo: email,
+      perfil_interes: perfil,
+      fecha_registro: new Date().toISOString(),
+    });
+    if (insErr) {
+      setSubmitting(false);
+      toast.error("Error creando perfil: " + insErr.message);
+      return;
     }
 
     setSubmitting(false);
@@ -128,8 +137,8 @@ function RegisterPage() {
               </SelectTrigger>
               <SelectContent>
                 {PERFILES.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
+                  <SelectItem key={p.value} value={p.value}>
+                    {p.label}
                   </SelectItem>
                 ))}
               </SelectContent>
